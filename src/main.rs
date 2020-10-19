@@ -5,6 +5,8 @@
 //    all other dead cells stay dead.
 
 type LiveCells = Vec<Vec<i32>>;
+type Size = i32;
+type Round = i32;
 
 fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: LiveCells) -> i32 {
   let calc = [
@@ -32,7 +34,7 @@ fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: LiveCells) -> i32 {
   neigbours
 }
 
-fn print_matrix(live_cells: LiveCells, size: i32, round: i32) {
+fn print_matrix(live_cells: LiveCells, size: Size, round: Round) {
   let mut matrix = vec![];
   for ir1 in 0..size {
     let mut row = String::from("");
@@ -54,7 +56,7 @@ fn print_matrix(live_cells: LiveCells, size: i32, round: i32) {
   }
 }
 
-fn calculate_round(live_cells: LiveCells, size: i32) -> LiveCells {
+fn calculate_round(live_cells: LiveCells, size: Size) -> LiveCells {
   let mut next_live_cells = vec![];
   for ir in 0..size {
     for ii in 0..size {
@@ -76,23 +78,23 @@ fn calculate_round(live_cells: LiveCells, size: i32) -> LiveCells {
 
 struct GameOfLife {
   live_cells: LiveCells,
-  round: i32,
-  size: i32,
+  round: Round,
+  size: Size,
 }
 
 impl Iterator for GameOfLife {
-  type Item = (i32, LiveCells);
-  fn next(&mut self) -> Option<(i32, LiveCells)> {
+  type Item = (LiveCells, Round, Size);
+  fn next(&mut self) -> Option<Self::Item> {
     let round = calculate_round((&self.live_cells).to_vec(), self.size);
 
     self.live_cells = round;
     self.round = self.round + 1;
 
-    Some((self.round, (&self.live_cells).to_vec()))
+    Some(((&self.live_cells).to_vec(), self.round, self.size))
   }
 }
 
-fn game_of_life(size: i32, live_cells: LiveCells) -> GameOfLife {
+fn game_of_life(size: Size, live_cells: LiveCells) -> GameOfLife {
   GameOfLife {
     live_cells: live_cells,
     round: 0,
@@ -117,6 +119,6 @@ fn main() {
   print_matrix((&live_cells).to_vec(), size, 0);
 
   for i in game_of_life(size, live_cells).take(rounds) {
-    print_matrix(i.1, size, i.0);
+    print_matrix(i.0, i.1, i.2);
   }
 }

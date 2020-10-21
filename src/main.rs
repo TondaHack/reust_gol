@@ -61,6 +61,16 @@ struct GameOfLife {
   size: Size,
 }
 
+impl GameOfLife {
+  fn new(size: Size, live_cells: LiveCells) -> GameOfLife {
+    GameOfLife {
+      live_cells: live_cells,
+      round: 0,
+      size: size,
+    }
+  }
+}
+
 impl fmt::Display for GameOfLife {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let mut matrix = vec![];
@@ -102,14 +112,6 @@ impl Iterator for GameOfLife {
   }
 }
 
-fn game_of_life(size: Size, live_cells: LiveCells) -> GameOfLife {
-  GameOfLife {
-    live_cells: live_cells,
-    round: 0,
-    size: size,
-  }
-}
-
 fn main() {
   let live_cells = vec![
     vec![0, 1],
@@ -124,13 +126,16 @@ fn main() {
   let size = 10;
   let rounds = 20;
 
-  println!("{}", GameOfLife {
-    live_cells: live_cells.clone(),
-    round: 0,
-    size: size,
-  });
+  println!(
+    "{}",
+    GameOfLife {
+      live_cells: live_cells.clone(),
+      round: 0,
+      size: size,
+    }
+  );
 
-  for gol in game_of_life(size, live_cells).take(rounds) {
+  for gol in GameOfLife::new(size, live_cells).take(rounds) {
     println!("{}", gol)
   }
 }

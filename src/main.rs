@@ -9,7 +9,7 @@ type LiveCells = Vec<Vec<i32>>;
 type Size = i32;
 type Round = i32;
 
-fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: LiveCells) -> i32 {
+fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: &LiveCells) -> i32 {
   let calc = [
     [-1, -1],
     [-1, 0],
@@ -35,13 +35,13 @@ fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: LiveCells) -> i32 {
   neigbours
 }
 
-fn calculate_round(live_cells: LiveCells, size: Size) -> LiveCells {
+fn calculate_round(live_cells: &LiveCells, size: Size) -> LiveCells {
   let mut next_live_cells = vec![];
   for ir in 0..size {
     for ii in 0..size {
       let el = vec![ir, ii];
 
-      let number_of_live_neibours = calculate_live_neigbours(ir, ii, (&live_cells).to_vec());
+      let number_of_live_neibours = calculate_live_neigbours(ir, ii, &live_cells);
 
       match (live_cells.contains(&el), number_of_live_neibours) {
         (false, 3) => next_live_cells.push(el),
@@ -87,10 +87,10 @@ impl fmt::Display for GameOfLife {
       matrix.push(row)
     }
 
-    write!(f, "Round {:?}\n", self.round);
+    write!(f, "Round {:?}\n", self.round).unwrap();
 
     for row in matrix.iter() {
-      write!(f, "{:?}\n", row);
+      write!(f, "{:?}\n", row).unwrap();
     }
     write!(f, "")
   }
@@ -99,14 +99,14 @@ impl fmt::Display for GameOfLife {
 impl Iterator for GameOfLife {
   type Item = GameOfLife;
   fn next(&mut self) -> Option<Self::Item> {
-    let calculated_live_cells = calculate_round((&self.live_cells).to_vec(), self.size);
+    let calculated_live_cells = calculate_round(&self.live_cells, self.size);
 
     self.live_cells = calculated_live_cells.clone();
     self.round = self.round + 1;
 
     Some(GameOfLife {
       live_cells: calculated_live_cells,
-      round: self.round + 1,
+      round: self.round,
       size: self.size,
     })
   }
@@ -135,7 +135,7 @@ fn main() {
     }
   );
 
-  for gol in GameOfLife::new(size, live_cells).take(rounds) {
-    println!("{}", gol)
-  }
+  GameOfLife::new(size, live_cells)
+    .take(rounds)
+    .for_each(|gol| println!("{}", gol));
 }

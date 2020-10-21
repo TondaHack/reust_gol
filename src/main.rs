@@ -3,6 +3,7 @@
 // 2. Any dead cell with three live neighbours becomes a live cell.
 // 3. All other live cells die in the next generation. Similarly,
 //    all other dead cells stay dead.
+use std::fmt;
 
 type LiveCells = Vec<Vec<i32>>;
 type Size = i32;
@@ -34,28 +35,6 @@ fn calculate_live_neigbours(ir: i32, ii: i32, live_cells: LiveCells) -> i32 {
   neigbours
 }
 
-fn print_matrix(live_cells: LiveCells, size: Size, round: Round) {
-  let mut matrix = vec![];
-  for ir1 in 0..size {
-    let mut row = String::from("");
-    for ii1 in 0..size {
-      let el1 = vec![ir1, ii1];
-      if live_cells.contains(&el1) {
-        row.push_str("o ")
-      } else {
-        row.push_str("x ")
-      }
-    }
-    matrix.push(row)
-  }
-
-  println!("Round {:?}", round);
-
-  for row in matrix.iter() {
-    println!("{:?}", row)
-  }
-}
-
 fn calculate_round(live_cells: LiveCells, size: Size) -> LiveCells {
   let mut next_live_cells = vec![];
   for ir in 0..size {
@@ -82,15 +61,44 @@ struct GameOfLife {
   size: Size,
 }
 
-impl Iterator for GameOfLife {
-  type Item = (LiveCells, Round, Size);
-  fn next(&mut self) -> Option<Self::Item> {
-    let round = calculate_round((&self.live_cells).to_vec(), self.size);
+impl fmt::Display for GameOfLife {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let mut matrix = vec![];
+    for ir1 in 0..self.size {
+      let mut row = String::from("");
+      for ii1 in 0..self.size {
+        let el1 = vec![ir1, ii1];
+        if self.live_cells.contains(&el1) {
+          row.push_str("o ")
+        } else {
+          row.push_str("x ")
+        }
+      }
+      matrix.push(row)
+    }
 
-    self.live_cells = round;
+    write!(f, "Round {:?}\n", self.round);
+
+    for row in matrix.iter() {
+      write!(f, "{:?}\n", row);
+    }
+    write!(f, "")
+  }
+}
+
+impl Iterator for GameOfLife {
+  type Item = GameOfLife;
+  fn next(&mut self) -> Option<Self::Item> {
+    let calculated_live_cells = calculate_round((&self.live_cells).to_vec(), self.size);
+
+    self.live_cells = calculated_live_cells.clone();
     self.round = self.round + 1;
 
-    Some(((&self.live_cells).to_vec(), self.round, self.size))
+    Some(GameOfLife {
+      live_cells: calculated_live_cells,
+      round: self.round + 1,
+      size: self.size,
+    })
   }
 }
 
@@ -116,9 +124,13 @@ fn main() {
   let size = 10;
   let rounds = 20;
 
-  print_matrix((&live_cells).to_vec(), size, 0);
+  println!("{}", GameOfLife {
+    live_cells: live_cells.clone(),
+    round: 0,
+    size: size,
+  });
 
-  for i in game_of_life(size, live_cells).take(rounds) {
-    print_matrix(i.0, i.1, i.2);
+  for gol in game_of_life(size, live_cells).take(rounds) {
+    println!("{}", gol)
   }
 }

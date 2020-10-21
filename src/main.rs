@@ -113,29 +113,22 @@ impl Iterator for GameOfLife {
 }
 
 fn main() {
-  let live_cells = vec![
-    vec![0, 1],
-    vec![0, 2],
-    vec![0, 3],
-    vec![1, 2],
-    vec![4, 1],
-    vec![4, 2],
-    vec![4, 3],
-  ];
-
   let size = 10;
   let rounds = 20;
-
-  println!(
-    "{}",
-    GameOfLife {
-      live_cells: live_cells.clone(),
-      round: 0,
-      size: size,
-    }
+  let gol = GameOfLife::new(
+    size,
+    vec![
+      vec![0, 1],
+      vec![0, 2],
+      vec![0, 3],
+      vec![1, 2],
+      vec![4, 1],
+      vec![4, 2],
+      vec![4, 3],
+    ],
   );
 
-  GameOfLife::new(size, live_cells)
-    .take(rounds)
-    .for_each(|gol| println!("{}", gol));
+  println!("{}", gol);
+
+  gol.take(rounds).for_each(|gol| println!("{}", gol));
 }
